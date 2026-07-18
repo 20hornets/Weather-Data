@@ -3,6 +3,54 @@ import pandas as pd
 from datetime import datetime, timezone
 from sqlalchemy import create_engine
 import json
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+# ------------------------------------------------------------------
+# Load environment variables
+# ------------------------------------------------------------------
+
+ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+
+
+print("Looking for .env at:", ENV_PATH)
+print(".env exists:", ENV_PATH.exists())
+
+load_dotenv(ENV_PATH)
+
+
+
+REQUIRED_ENV_VARS = [
+    "DB_HOST",
+    "DB_PORT",
+    "DB_NAME",
+    "DB_USER",
+    "DB_PASSWORD",
+]
+
+missing_vars = [
+    var for var in REQUIRED_ENV_VARS
+    if not os.getenv(var)
+]
+
+if missing_vars:
+    raise RuntimeError(
+        f"Missing required environment variables: {', '.join(missing_vars)}"
+    )
+# # ---------------- DEBUG ----------------
+# print("=" * 50)
+# print("DB_HOST:", os.getenv("DB_HOST"))
+# print("DB_PORT:", os.getenv("DB_PORT"))
+# print("DB_NAME:", os.getenv("DB_NAME"))
+# print("DB_USER:", os.getenv("DB_USER"))
+# print("=" * 50)
+# # ---------------------------------------
+
+# ------------------------------------------------------------------
+# API Configuration
+# ------------------------------------------------------------------
+
 
 # REFACTOR: Move to environment/config
 HEADERS = {
@@ -82,10 +130,15 @@ def build_weather_dataframe():
 
     return weather_update
 
-
+#updated to be flexible from the .env file rather than hardcoded values
 def database_connection():
     engine = create_engine(
-        "postgresql+psycopg2://postgres:password@10.0.2.2:5432/postgres"
+        f"postgresql+psycopg2://"
+        f"{os.getenv('DB_USER')}:"
+        f"{os.getenv('DB_PASSWORD')}@"
+        f"{os.getenv('DB_HOST')}:"
+        f"{os.getenv('DB_PORT')}/"
+        f"{os.getenv('DB_NAME')}"
     )
 
     return engine
