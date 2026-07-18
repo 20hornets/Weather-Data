@@ -85,7 +85,7 @@ def build_weather_dataframe():
 
 def database_connection():
     engine = create_engine(
-        "postgresql+psycopg2://postgres:password@localhost:5432/postgres"
+        "postgresql+psycopg2://postgres:password@10.0.2.2:5432/postgres"
     )
 
     return engine
@@ -103,19 +103,21 @@ def filter_new_records(weather_update, engine):
 
     weather_update["observed_at"] = pd.to_datetime(
         weather_update["observed_at"],
-        utc=True
+        utc=True,
+        format="mixed",
     )
 
     existing_records["observed_at"] = pd.to_datetime(
         existing_records["observed_at"],
-        utc=True
+        utc=True,
+        format="mixed",
     )
 
     weather_update = weather_update.merge(
         existing_records,
         on=["station_id", "observed_at"],
         how="left",
-        indicator=True
+        indicator=True,
     )
 
     weather_update = weather_update[
